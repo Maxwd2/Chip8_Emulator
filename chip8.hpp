@@ -108,6 +108,44 @@ class Chip8 {
 
         void Chip8::OP_7XNN() {
             uint8_t nn = instruction & 0x00FFu;
+            uint8_t x = instruction & 0x0F00u;
+            registers[x] += nn; // account for overflow here?
+        }
+        
+        void Chip8::OP_8XY0() {
+            uint8_t x = instruction & 0x0F00u;
+            uint8_t y = instruction & 0x00F0u;
+            registers[x] = registers[y];
+        }
+
+        void Chip8::OP_8XY1() {
+            uint8_t x = instruction & 0x0F00u;
+            uint8_t y = instruction & 0x00F0u;
+            registers[x] = registers[x] | registers[y];
+        }
+
+        void Chip8::OP_8XY2() {
+            uint8_t x = instruction & 0x0F00u;
+            uint8_t y = instruction & 0x00F0u;
+            registers[x] = registers[x] & registers[y];
+        }
+
+        void Chip8::OP_8XY3() {
+            uint8_t x = instruction & 0x0F00u;
+            uint8_t y = instruction & 0x00F0u;
+            registers[x] = registers[x] ^ registers[y];
+        }
+
+        void Chip8::OP_8XY4() {
+            uint8_t nn = instruction & 0x00FFu;
+            uint8_t x = instruction & 0x0F00u;
+            if ((registers[x] + nn) > 255) {
+                registers[15] = 1;
+            } 
+            else {
+                registers[15] = 0;
+            }
+            registers[x] += nn; // account for overflow here?
         }
 
         std::default_random_engine randGen;
