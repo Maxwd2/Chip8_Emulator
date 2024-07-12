@@ -61,7 +61,7 @@ class Chip8 {
         void Chip8::OP_3XNN() {
             // if value at register vx is equal to 0x00FFu
             uint8_t nn = instruction & 0x00FFu;
-            uint8_t x = instruction & 0x0F00u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
             uint8_t vx = registers[x];
             if (vx == nn) { // skip
                 pc += 2;
@@ -70,7 +70,7 @@ class Chip8 {
 
         void Chip8::OP_4XNN() {
             uint8_t nn = instruction & 0x00FFu;
-            uint8_t x = instruction & 0x0F00u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
             uint8_t vx = registers[x];
             if (vx != nn) { // skip
                 pc += 2;
@@ -79,9 +79,9 @@ class Chip8 {
 
         void Chip8::OP_5XY0() {
             // if value in register vx equals value in register vy
-            uint8_t x = instruction & 0x0F00u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
             uint8_t vx = registers[x];
-            uint8_t y = instruction & 0x00F0u;
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
             uint8_t vy = registers[y];
             if (vx == vy) { // skip
                 pc += 2;
@@ -90,9 +90,9 @@ class Chip8 {
         }
 
         void Chip8::OP_9XY0() {
-            uint8_t x = instruction & 0x0F00u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
             uint8_t vx = registers[x];
-            uint8_t y = instruction & 0x00F0u;
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
             uint8_t vy = registers[y];
             if (vx != vy) { // skip
                 pc += 2;
@@ -102,50 +102,79 @@ class Chip8 {
 
         void Chip8::OP_6XNN() {
             uint8_t nn = instruction & 0x00FFu;
-            uint8_t x = instruction & 0x0F00u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
             registers[x] = nn;
         }
 
         void Chip8::OP_7XNN() {
             uint8_t nn = instruction & 0x00FFu;
-            uint8_t x = instruction & 0x0F00u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
             registers[x] += nn; // account for overflow here?
         }
         
         void Chip8::OP_8XY0() {
-            uint8_t x = instruction & 0x0F00u;
-            uint8_t y = instruction & 0x00F0u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
             registers[x] = registers[y];
         }
 
         void Chip8::OP_8XY1() {
-            uint8_t x = instruction & 0x0F00u;
-            uint8_t y = instruction & 0x00F0u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
             registers[x] = registers[x] | registers[y];
         }
 
         void Chip8::OP_8XY2() {
-            uint8_t x = instruction & 0x0F00u;
-            uint8_t y = instruction & 0x00F0u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
             registers[x] = registers[x] & registers[y];
         }
 
         void Chip8::OP_8XY3() {
-            uint8_t x = instruction & 0x0F00u;
-            uint8_t y = instruction & 0x00F0u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
             registers[x] = registers[x] ^ registers[y];
         }
 
         void Chip8::OP_8XY4() {
             uint8_t nn = instruction & 0x00FFu;
-            uint8_t x = instruction & 0x0F00u;
-            if ((registers[x] + nn) > 255) {
-                registers[15] = 1;
-            } 
-            else {
-                registers[15] = 0;
-            }
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            registers[15] = ((registers[x] + nn) > 255) ? 1 : 0;
+            /*if ((registers[x] + nn) > 255) {
+                registers[15] = 1; 
+            } else { registers[15] = 0; }*/
             registers[x] += nn; // account for overflow here?
+        }
+
+        // if first operand larger than second, set VF to 1, otherwise 0
+        void Chip8::OP_8XY5() {
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            registers[15] = (registers[x] >= registers[y]) ? 1 : 0;
+            registers[x] -= registers[y];
+        }
+        // if first operand larger than second, set VF to 1, otherwise 0
+        void Chip8::OP_8XY7() {
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            registers[15] = (registers[y] >= registers[x]) ? 1 : 0;
+            registers[x] = registers[y] - registers[x];
+        }
+
+        void Chip8::OP_8XY6() {
+            /* OPTIONAL: set VX to value of VY */
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            uint8_t to_shift = registers[x];
+            registers[15] = ((to_shift & 0x01u) == 0x01u) ? 1 : 0;
+            registers[x] = to_shift >> 1u;
+        }
+
+        void Chip8::OP_8XYE() {
+            /* OPTIONAL: set VX to value of VY */
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            uint8_t to_shift = registers[x];
+            registers[15] = ((to_shift & 0x80u) == 0x80u) ? 1 : 0;
+            registers[x] = to_shift << 1u;
         }
 
         std::default_random_engine randGen;
