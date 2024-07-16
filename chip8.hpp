@@ -35,6 +35,8 @@ class Chip8 {
         {
             randByte = std::uniform_int_distribution<uint8_t>(0, 255U);
         }
+        std::default_random_engine randGen;
+        std::uniform_int_distribution<uint8_t> randByte;
 
         void Chip8::OP_00E0() { //clear screen
             memset(video, 0, sizeof(video));
@@ -177,7 +179,49 @@ class Chip8 {
             registers[x] = to_shift << 1u;
         }
 
-        std::default_random_engine randGen;
-        std::uniform_int_distribution<uint8_t> randByte;
+        void Chip8::OP_ANNN() {
+            uint16_t addr = instruction & 0x0FFFu;
+            index = addr;
+        }
+
+        void Chip8::OP_BNNN() {
+            // configure other options
+            uint16_t nnn = instruction & 0x0FFFu;
+            pc = nnn + registers[0];
+        }
+
+        void Chip8::OP_CXNN() {
+            uint8_t nn = instruction & 0x00FFu;
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            registers[x] =  randByte(randGen) & nn;
+        }
+
+        void Chip8::OP_DXYN() {
+            uint8_t x = (instruction & 0x0F00u) >> 8u;
+            uint8_t y = (instruction & 0x00F0u) >> 4u;
+            uint8_t x_coord = registers[x] % 64;
+            uint8_t y_coord = registers[y] % 32;
+            registers[15] = 0;
+
+            uint8_t n = instruction & 0x000Fu;
+            //sprites are straight vertical lines 1-15 bytes tall?
+            for (unsigned int row = 0; row < 32; row++) {
+                uint8_t sprite_byte = memory[index + row];
+
+                for (unsigned int col = 0; col < 8; col++) {
+                    uint8_t sprite_pixel = sprite_byte & (0x80u >> col);
+                    uint32_t* screen_pixel = &video[(y_coord + row) * 64 + (x_coord + col)]; ]
+                
+                    if (sprite_pixel) {
+                        if (screen_pixel == 0xFFFFFFFF) {
+                            registers[15] = 1;
+                        }
+                        *screen_pixel ^= 0xFFFFFFFF;
+                    }
+                }
+            }
+        }
+
+
     private:
 };
