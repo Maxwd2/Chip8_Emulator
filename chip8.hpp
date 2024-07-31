@@ -21,6 +21,8 @@ public:
     uint8_t keypad[16]{};
     uint32_t video[64 * 32]{};
     uint16_t instruction;
+    uint8_t delayTimer{};
+    uint8_t soundTimer{};
     /**** \/ ADD THESE LATER \/ ***/
     // uint8_t x;
     // uint8_t y;
@@ -118,7 +120,7 @@ public:
     for (size_t i = 0; i < 0x65; i++) {
         tableF[i] = &Chip8::OP_NULL;
     }
-        // table indicies for 0,8,E correlate to last digit
+        // table indicies for 0,8,E correlate to last hex digit
         // in instruction
     table0[0x0] = &Chip8::OP_00E0;
     table0[0xE] = &Chip8::OP_00EE;
@@ -135,7 +137,7 @@ public:
     
     tableE[0x1] = &Chip8::OP_EXA1;
     tableE[0xE] = &Chip8::OP_EX9E;
-        // table indicies for F correlate to last 2 digists
+        // table indicies for F correlate to last 2 hex digists
         // in instruction
     tableF[0x07] = &Chip8::OP_FX07;
     tableF[0x0A] = &Chip8::OP_FX0A;

@@ -268,6 +268,36 @@ void Chip8::OP_FX1E() {
     //check for overflow, set VF
 }
 
-void Chip8::Cycle() {
+void Chip8::OP_FX0A() {
 
+}
+
+void Chip8::OP_FX29() {
+
+}
+
+void Chip8::OP_FX33() {
+
+}
+
+void Chip8::OP_FX55() {
+
+}
+
+void Chip8::OP_FX65() {
+
+}
+
+void Chip8::Cycle() {
+    opcode = (memory[pc] << 8u) | memory[pc + 1];
+    pc += 2;
+
+    ((*this).*(table[(opcode & 0xF000u) >> 12u]))();
+
+    if (delayTimer > 0) {
+        --delayTimer;
+    }
+    if (soundTimer > 0) {
+        --soundTimer;
+    }
 }
