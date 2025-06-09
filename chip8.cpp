@@ -78,7 +78,7 @@ void Chip8::OP_00EE() {
 }
 
 void Chip8::OP_3XNN() {
-    // if value at register vx is equal to 0x00FFu
+    // if value at register vx is equal to 0x00FFu then skip
     uint8_t nn = instruction & 0x00FFu;
     uint8_t x = (instruction & 0x0F00u) >> 8u;
     uint8_t vx = registers[x];
@@ -97,14 +97,14 @@ void Chip8::OP_4XNN() {
 }
 
 void Chip8::OP_5XY0() {
-    // if value in register vx equals value in register vy
+    // if value in register vx equals value in register vy then skip
     uint8_t x = (instruction & 0x0F00u) >> 8u;
     uint8_t vx = registers[x];
     uint8_t y = (instruction & 0x00F0u) >> 4u;
     uint8_t vy = registers[y];
     if (vx == vy) { // skip
         pc += 2;
-        //this.OP_1NNN?
+        //this.OP_1NNN ?
     }
 }
 
@@ -155,6 +155,7 @@ void Chip8::OP_8XY3() {
     registers[x] = registers[x] ^ registers[y];
 }
 
+// Add vx and vy and set the VF to 1 if there is carry
 void Chip8::OP_8XY4() {
     uint8_t nn = instruction & 0x00FFu;
     uint8_t x = (instruction & 0x0F00u) >> 8u;
@@ -280,12 +281,20 @@ void Chip8::OP_FX33() {
 
 }
 
+// Store registers V0 through Vx in memory starting at location I.
 void Chip8::OP_FX55() {
-
+    uint8_t x = (instruction & 0x0F00u) >> 8u;
+    for (unit8_t i = 0; i < x; i++) {
+        memory[index + i] = registers[i]; // correct offset.
+    }
 }
 
+// Fill registers V0 to Vx with memory starting at I
 void Chip8::OP_FX65() {
-
+    uint8_t x = (instruction & 0x0F00u) >> 8u;
+    for (unit8_t i = 0; i < x; i++) {
+        registers[i] = memory[index + i]; // correct offset.
+    }
 }
 
 void Chip8::Cycle() {
